@@ -47,8 +47,12 @@ def find_closest(point, path):
 def route_similarity(route1, route2):
     ''' note this is not communtative '''
     closests = []
+    if not route1 or not route2:
+        return 100
     for point in route1:
         closests.append(find_closest(point, route2))
+        if closests[-1] > 100:
+            return sum(closests) / len(closests)
 
     return sum(closests) / len(closests)
 
@@ -59,19 +63,27 @@ def run_similarity(run1, run2):
     return math.fabs(run1['distance'] - run2['distance']) * math.fabs(run1['speed'] - run2['speed'])
 
 
+def get_top_3(activity, other_activities):
+    ''' finds the top 3 most similar activities '''
+    quite_close = []
+    for test_activity in other_activities:
+        route_1 = route_similarity(activity['path'], test_activity['path'])
+        route_2 = route_similarity(test_activity['path'], activity['path'])
+        route_sim = route_1 + route_2  # combine by adding
+        run_sim = run_similarity(activity, test_activity)
+
+        if run_sim < 1:  # eliminate any which aren't fairly close
+            quite_close.append({'name': test_activity['name'], 'val': min(0.1*route_sim, run_sim)})
+
+    similar = sorted(quite_close, key=lambda x: x['val'])  # sort by the value
+    similar += [{'name': None} for ii in range(0, 3)]
+    print activity['name'], similar[0]['name'], similar[1]['name'], similar[2]['name']
+
+
+
 if __name__ == '__main__':
     acts = get_activities()
     acts = [thin(a) for a in acts]
+    print 'we done this'
     for ix, a in enumerate(acts[0:10]):
-        sims = []
-        for a2 in acts[ix+1:]:
-            if a['path'] and a2['path']:
-                sim = route_similarity(a['path'], a2['path'])
-                sim2 = route_similarity(a2['path'], a['path'])
-                route_sim = sim + sim2
-                run_sim = run_similarity(a, a2)
-                if run_sim < 1:
-                    sims.append([a2['name'], min(0.1*route_sim, run_sim)])
-        sims = sorted(sims, key=lambda x: x[1])
-        sims += [[None], [None], [None]]
-        print a['name'], sims[0][0], sims[1][0], sims[2][0]
+        get_top_3(a, acts[ix+1:])
