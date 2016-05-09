@@ -3,6 +3,8 @@ import math
 
 from settings import ALL_ACTS_JSON
 
+from matplotlib import pyplot as plt
+
 
 def stats():
     ''' just a basic function to view statistics from the activities we have '''
@@ -39,5 +41,24 @@ def hist():
     mean = sum(distances) / len(distances)
     print sum((mean - value) ** 2 for value in distances) / len(distances)
 
+
+def get_distances():
+    with open('all_acts.json') as f:
+        activities = json.load(f)
+
+    dists = [math.sqrt(a['distance'] / 1609.0) for a in activities]
+    print dists
+
+
+def get_paces():
+    with open('all_acts.json') as f:
+        activities = json.load(f)
+
+    paces = [a['average_speed'] for a in activities]
+    plt.hist(paces)
+    plt.show()
+
+
+
 if __name__ == '__main__':
-    hist()
+    get_paces()
