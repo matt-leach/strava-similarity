@@ -1,15 +1,6 @@
 import json
 
-from constants import ALL_ACTS_JSON, FILTER_NUM
-
-
-def thin(activity):
-    new = []
-    for ix, point in enumerate(activity['path']):
-        if ix % FILTER_NUM == 0:
-            new.append(point)
-    activity['path'] = new
-    return activity
+from constants import ALL_ACTS_JSON
 
 
 def get_ids():
